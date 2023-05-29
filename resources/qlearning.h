@@ -88,10 +88,57 @@ void take_action(PongGame & pg, int action, int QPADDLE_MOVE){
         return;
 }
 
-// int calculate_reward(int end_distacne, int starting_distance){
+void init_state_table(std::vector<std::vector<int>> &lookupTable, int tableSize){
 
+    int value = 0;
+    for (int i = 0; i < tableSize; ++i) {
+        for (int j = 0; j < tableSize; ++j) {
+            lookupTable[i][j] = value;
+            value++;
+        }
+    }
 
-//     return -0.5;
+    // Print the lookup table
+    for (const auto& row : lookupTable) {
+        for (int val : row) {
+            // std::cout << val << " ";
+        }
+        // std::cout << std::endl;
+    }
 
-// }
+    return;
+}
 
+int correct_move_calculator(struct State state1, float vel){
+
+    if(vel >= 0)// ball going down
+        if(state1.paddle1 + 28 > state1.ball_y)
+            return 1;
+        else if(state1.paddle1 + 28 < state1.ball_y)
+            return 2;
+    else
+        if(state1.paddle1 + 28 > state1.ball_y)
+            return 0;
+        else if(state1.paddle1 + 28 < state1.ball_y)
+            return 1;
+
+    return 0;
+
+}
+
+int state_calc(std::vector<std::vector<int>> & lookupTable, struct State & state, float velocity, std::size_t range){
+
+    // std::cout<<"ball pad "<<state.ball_y<< "   " <<state.paddle1<<endl;
+    // std::cout<<"State:  "<<lookupTable[state.ball_y][state.paddle1]<< "     "<<velocity<<endl;
+
+    if(velocity > 0){
+        // cout<<"POSTITIVE"<<velocity<<endl; //state.ball_x, 
+        return range + lookupTable[state.ball_y][state.paddle1];     //5000 + state.ball_x + 2*state.ball_y + state.paddle1;
+    }else{
+        // cout<<"NEGATIVE"<<velocity<<endl; //state.ball_x, 
+        return range - lookupTable[state.ball_y][state.paddle1];     //5000 - state.ball_x + 2*state.ball_y + state.paddle1;
+    }
+
+    return lookupTable[state.ball_y][state.paddle1];
+
+}

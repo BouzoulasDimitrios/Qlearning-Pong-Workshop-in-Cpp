@@ -1,5 +1,5 @@
 /**
- * launch the game: g++ main.cpp -o myapp -lsfml-graphics -lsfml-window -lsfml-system && ./myapp 
+ * launch the game: g++ main.cpp -o main -lsfml-graphics -lsfml-window -lsfml-system && ./main 
 */
 
 #include <SFML/Window.hpp>
@@ -42,6 +42,7 @@ int game_state_end;
 int action;
 float reward = 0;
 int old_save_val = 0;
+int game_mode = 0;
 
 std::size_t range = 262144;
 std::string filename = "./resources/weights.txt";
@@ -55,82 +56,12 @@ std::ostream &operator<<(std::ostream & stream, const State & state_of_game){ re
 const int tableSize = 512;
 std::vector<std::vector<int>> lookupTable(tableSize, std::vector<int>(tableSize, 0));
 
-void init_state_table(){
-
-    int value = 0;
-    for (int i = 0; i < tableSize; ++i) {
-        for (int j = 0; j < tableSize; ++j) {
-            lookupTable[i][j] = value;
-            value++;
-        }
-    }
-
-    // Print the lookup table
-    for (const auto& row : lookupTable) {
-        for (int val : row) {
-            // std::cout << val << " ";
-        }
-        // std::cout << std::endl;
-    }
-
-    return;
-}
-
-int state_calc(State & state, float velocity){
-
-    std::cout<<"ball pad "<<state.ball_y<< "   " <<state.paddle1<<endl;
-    std::cout<<"State:  "<<lookupTable[state.ball_y][state.paddle1]<< "     "<<velocity<<endl;
-
-    if(velocity > 0){
-        cout<<"POSTITIVE"<<velocity<<endl; //state.ball_x, 
-        return range + lookupTable[state.ball_y][state.paddle1];     //5000 + state.ball_x + 2*state.ball_y + state.paddle1;
-    }else{
-        cout<<"NEGATIVE"<<velocity<<endl; //state.ball_x, 
-        return range - lookupTable[state.ball_y][state.paddle1];     //5000 - state.ball_x + 2*state.ball_y + state.paddle1;
-    }
-
-    return lookupTable[state.ball_y][state.paddle1];
-
-}
-
-int correct_move_calculator(State state1, float vel){
-
-    cout<< vel<<endl;
-    if(vel >= 0){
-        cout<<"going down"<<endl;
-
-        if(state1.paddle1 + 28 > state1.ball_y){
-            cout<<"paddle below ball 1 "<< state1.paddle1 + 28 << " pad , ball " << state1.ball_y <<endl;
-            return 1;
-        }else if(state1.paddle1 + 28 < state1.ball_y){
-            cout<<" 2 "<< state1.paddle1 + 28 << " pad , ball " << state1.ball_y <<endl;
-            return 2;
-        }
-
-    }else{
-        cout<<"going up"<<endl;
-        if(state1.paddle1 + 28 > state1.ball_y){
-            cout<<" paddle bellow ball 0 "<< state1.paddle1 + 28 << " pad , ball " << state1.ball_y <<endl;
-            return 0;
-        }else if(state1.paddle1 + 28 < state1.ball_y){
-            cout<<" 1 paddle above ball 1 "<< state1.paddle1 + 28 << " pad , ball " << state1.ball_y <<endl;
-            return 1;
-        }
-    }
-
-
-    return 0;
-}
 
 
 int main()
 {
-    init_state_table();
-    // select game mode
-    int game_mode = game_mode_selection();
-
-    // cout<<"filename? "<<endl;
-    // cin>>filename;
+    init_state_table(lookupTable, tableSize);
+    game_mode = game_mode_selection();
     load_table(filename, Qtable);
     PongGame pg;
 
@@ -166,7 +97,7 @@ int main()
         start_state.paddle1 = l_paddle_pos.y;
 
         //calculate starting game state
-        game_state_start = state_calc(start_state, velY);//start_state.ball_x + (2*start_state.ball_y) + start_state.paddle1;
+        game_state_start = state_calc(lookupTable, start_state, velY, range);//start_state.ball_x + (2*start_state.ball_y) + start_state.paddle1;
 
         int correct_move = correct_move_calculator(start_state, velY);
 
@@ -201,16 +132,10 @@ int main()
         pg.ball.setPosition(pos);
 
         // automated player -> fuctions
-        if(game_mode == 3)
-            perfect_player(pg);
-        
-        /// paddle = 56 /2 = 28, ball = 10/2 = 5 
-        int starting_distance = start_state.paddle1 - start_state.ball_y + 28 ;
-        int end_distacne      = end_state.paddle1   - end_state.ball_y   + 28 ;        
-// rand()%2 ? -1.0f : 1.0;
+        if(game_mode == 3)perfect_player(pg);
+ 
         reward = (action == correct_move) ? 1 : -1;
 
-        cout<<" reward 3 = "<<reward<<endl;
 
         //end state;
         pos = pg.ball.getPosition();
@@ -220,10 +145,7 @@ int main()
         end_state.ball_y = abs(pos.y);
         end_state.paddle1 = l_paddle_pos.y;
 
-        // game_state_end = end_state.ball_x + 2*end_state.ball_y + end_state.paddle1;
-        cout<<"end distance ; "<<end_distacne<<endl;
-        game_state_end = state_calc(end_state, velY);// (end_state.ball_x*SCREEN_WIDTH + abs(end_state.ball_y* SCREEN_HEIGHT) + SCREEN_HEIGHT * end_state.paddle1)/2;
-
+        game_state_end = state_calc(lookupTable, end_state, velY, range);// (end_state.ball_x*SCREEN_WIDTH + abs(end_state.ball_y* SCREEN_HEIGHT) + SCREEN_HEIGHT * end_state.paddle1)/2;
 
         update_qtable(Qtable, game_state_end, game_state_start, learning_rate, discount_rate, reward, action);
 
