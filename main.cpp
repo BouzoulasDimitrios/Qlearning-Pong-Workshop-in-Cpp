@@ -1,5 +1,5 @@
 /**
- * launch the game: g++ main.cpp -o main -lsfml-graphics -lsfml-window -lsfml-system && ./main 
+ * launch the game: g++ main.cpp -o myapp -lsfml-graphics -lsfml-window -lsfml-system && ./myapp 
 */
 
 #include <SFML/Window.hpp>
@@ -7,11 +7,9 @@
 #include <cmath>
 #include <string>
 #include <iostream>
-
 #include <vector>
 #include <fstream>
 #include <math.h>
-
 #include <chrono>
 #include <thread>
 #include <string>
@@ -23,26 +21,22 @@
 using namespace std;
 
 const int QPADDLE_MOVE = 15;
-
 const int NUMBER_OF_ACTIONS = 3;
-const int NUMBER_OF_STATES  = 262144*2;//10000;//3000;
+const int NUMBER_OF_STATES  = 262144*2;
+const int tableSize = 512;
 
 float learning_rate = 0.7;
 float discount_rate = 0.99;
-
 float exploration_rate = 1;
 float max_exploration_rate = 1; 
 float min_exploration_rate = 0.01;
 float exploration_decay_rate = 0.01;
-
-long long int game_loop = 0;
+float reward = 0;
 
 int game_state_start;
 int game_state_end;
 int action;
-float reward = 0;
 int old_save_val = 0;
-int game_mode = 0;
 
 std::size_t range = 262144;
 std::string filename = "./resources/weights.txt";
@@ -53,28 +47,23 @@ State end_state;
 
 std::ostream &operator<<(std::ostream & stream, const State & state_of_game){ return stream << "ball x =  " <<state_of_game.ball_x << " ball y =  " <<state_of_game.ball_y << " paddle 1 =  "<< state_of_game.paddle1<< " paddle 2 =  "<< state_of_game.paddle2<<endl; }
 
-const int tableSize = 512;
 std::vector<std::vector<int>> lookupTable(tableSize, std::vector<int>(tableSize, 0));
-
 
 
 int main()
 {
+
     init_state_table(lookupTable, tableSize);
-    game_mode = game_mode_selection();
+    int game_mode = game_mode_selection();
     load_table(filename, Qtable);
     PongGame pg;
-
-    //needed for random values;
-    srand(time(0));
+    srand(time(0)); // random values seed
     pg.game_window.setKeyRepeatEnabled(false);
     wait_to_start(pg);
 
     // run the program as long as the window is open
     while (pg.game_window.isOpen())
     {
-        cout<<" start of loop "<<endl;
-
         // check all the window's events that were triggered since the last iteration of the loop
         sf::Event event;
 
@@ -88,8 +77,7 @@ int main()
         pos = pg.ball.getPosition();
         l_paddle_pos = pg.left_paddle.getPosition();
         r_paddle_pos = pg.right_paddle.getPosition();
-        pos.x += velX;
-        pos.y += velY;
+        pos.x += velX, pos.y += velY;
 
         //starting state
         start_state.ball_x = pos.x;
@@ -97,7 +85,7 @@ int main()
         start_state.paddle1 = l_paddle_pos.y;
 
         //calculate starting game state
-        game_state_start = state_calc(lookupTable, start_state, velY, range);//start_state.ball_x + (2*start_state.ball_y) + start_state.paddle1;
+        game_state_start = state_calc(lookupTable,  start_state, velY, range);//start_state.ball_x + (2*start_state.ball_y) + start_state.paddle1;
 
         int correct_move = correct_move_calculator(start_state, velY);
 
@@ -132,10 +120,14 @@ int main()
         pg.ball.setPosition(pos);
 
         // automated player -> fuctions
-        if(game_mode == 3)perfect_player(pg);
- 
-        reward = (action == correct_move) ? 1 : -1;
+        if(game_mode == 3) perfect_player(pg);
+        
+        /// paddle = 56 /2 = 28, ball = 10/2 = 5 
+        int starting_distance = start_state.paddle1 - start_state.ball_y + 28 ;
+        int end_distacne      = end_state.paddle1   - end_state.ball_y   + 28 ;        
 
+        // calculate reward
+        reward = (action == correct_move) ? 1 : -1;
 
         //end state;
         pos = pg.ball.getPosition();
@@ -155,12 +147,11 @@ int main()
         pg.draw();
         pg.game_window.display();  
 
-        cout<< " model state: \nlearning rate = "<<learning_rate<<"exploration_Rate = "<<exploration_rate<<" reward = "<<reward<<endl;
+        // cout<< " model state: \nlearning rate = "<<learning_rate<<"exploration_Rate = "<<exploration_rate<<" reward = "<<reward<<endl;
 
         int total_points = r_points + l_points ;
         if(total_points % 10 == 0 && total_points != old_save_val)
           save_table(filename, Qtable), old_save_val = total_points;
-        
 
         //reset reward
         reward = 0;

@@ -41,28 +41,17 @@ void load_table(std::string filename, std::vector<std::vector<float>> &Qtable){
  * later the actions are based more and more on the qtables values
 */
 int select_action(int game_state, std::vector<std::vector<float>> &Qtable, float exploration_rate){
+
     int action;
-
-    // int random_value = static_cast <int> (rand()) / (static_cast <float> (RAND_MAX/1.0));
-    // if(random_value > exploration_rate){
-
-        // action = static_cast<float> (*max_element(std::begin(Qtable[game_state]), std::end(Qtable[game_state])));
-        action = (*max_element(std::begin(Qtable[game_state]), std::end(Qtable[game_state])));
-        std::cout<<"ACTION  SELECTED = "<<action<< " 1  =" <<Qtable[game_state][0]<< "1 = " <<Qtable[game_state][1]<< "2 = " <<Qtable[game_state][2] <<std::endl;
-        // int  x = sizeof(Qtable[game_state]) / sizeof(int);
-        // std::cout<<std::distance(Qtable[game_state], Qtable[game_state] + x)<<std::endl;
-        
-        // std::vector<int> v = {2, 1, 3, 6, 7, 9, 8};
-    
+    exploration_rate = 0;
+    if(0.2 > exploration_rate){
         auto it = std::minmax_element(Qtable[game_state].begin(), Qtable[game_state].end());
-        int min_idx = std::distance(Qtable[game_state].begin(), it.first);
         int max_idx = std::distance(Qtable[game_state].begin(), it.second);
         return max_idx;
-    // }else{
-    //     action = rand() % 3;
-    //     std::cout<<"ACTION  RANDOM = "<<action<<std::endl;
+    }
 
-    // }
+    action = rand() % 3;
+    std::cout<<"ACTION  RANDOM = "<<action<<std::endl;
     return action;
 
 }
@@ -109,34 +98,32 @@ void init_state_table(std::vector<std::vector<int>> &lookupTable, int tableSize)
     return;
 }
 
-int correct_move_calculator(struct State state1, float vel){
+int correct_move_calculator(State state1, float vel){
 
-    if(vel >= 0)// ball going down
+    if(vel >= 0){
         if(state1.paddle1 + 28 > state1.ball_y)
             return 1;
         else if(state1.paddle1 + 28 < state1.ball_y)
             return 2;
-    else
+    }else{
         if(state1.paddle1 + 28 > state1.ball_y)
             return 0;
         else if(state1.paddle1 + 28 < state1.ball_y)
             return 1;
+    }
 
-    return 0;
-
+    return 0; // avoid warning
 }
+
 
 int state_calc(std::vector<std::vector<int>> & lookupTable, struct State & state, float velocity, std::size_t range){
 
-    // std::cout<<"ball pad "<<state.ball_y<< "   " <<state.paddle1<<endl;
-    // std::cout<<"State:  "<<lookupTable[state.ball_y][state.paddle1]<< "     "<<velocity<<endl;
-
     if(velocity > 0){
         // cout<<"POSTITIVE"<<velocity<<endl; //state.ball_x, 
-        return range + lookupTable[state.ball_y][state.paddle1];     //5000 + state.ball_x + 2*state.ball_y + state.paddle1;
+        return range + lookupTable[state.ball_y][state.paddle1];     
     }else{
         // cout<<"NEGATIVE"<<velocity<<endl; //state.ball_x, 
-        return range - lookupTable[state.ball_y][state.paddle1];     //5000 - state.ball_x + 2*state.ball_y + state.paddle1;
+        return range - lookupTable[state.ball_y][state.paddle1];     
     }
 
     return lookupTable[state.ball_y][state.paddle1];

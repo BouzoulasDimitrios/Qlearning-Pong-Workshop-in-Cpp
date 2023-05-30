@@ -123,8 +123,8 @@ class PongGame{
 
 
 void initial_ball_speed(){
-    velX = rand()%2 ? -1.0f : 1.0;
-    velY = rand()%2 ? -1.0f : 1.0;
+    velX = rand()%2 ? -0.5f : 0.5;
+    velY = rand()%2 ? -0.5f : 0.5;
 }
 
 
