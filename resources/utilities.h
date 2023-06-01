@@ -1,6 +1,9 @@
 #include <string>
 #include <iostream>
 
+/**
+ * check that user input is a number
+*/
 bool check_number(std::string str) {
    for (int i = 0; i < str.length(); i++)
         if (isdigit(str[i]) == false)
@@ -8,6 +11,9 @@ bool check_number(std::string str) {
     return true;
 }
 
+/**
+ * Function responsible for game mode selection, only accepts correct entries.
+*/
 int game_mode_selection(){
 
     std::string user_input;

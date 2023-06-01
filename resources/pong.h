@@ -80,7 +80,10 @@ class PongGame{
         game_window.draw(right_score);
         game_window.display();  
     }
-
+    
+    /**
+     * resets game to starting state.
+    */
     void reset(){
         
         ball_x = SCREEN_WIDTH/2 - BALL_RADIUS/2, ball_y = SCREEN_HEIGHT/2 - BALL_RADIUS/2;
@@ -96,6 +99,9 @@ class PongGame{
 
     }
 
+    /**
+     * end game sequence, writes message based on who won.
+    */
     void end_game(bool left_player_won){
 
         sf::Text message;
@@ -121,13 +127,17 @@ class PongGame{
 
 };
 
-
+/**
+ * Randomizes initial ball speed/direction
+*/
 void initial_ball_speed(){
     velX = rand()%2 ? -0.5f : 0.5;
     velY = rand()%2 ? -0.5f : 0.5;
 }
 
-
+/**
+ * User has to press enter in order to start the game
+*/
 void wait_to_start(PongGame & game){
 
     bool start = false;
@@ -156,6 +166,9 @@ void wait_to_start(PongGame & game){
 
 }
 
+/**
+ * Handles point scoring, resets the game.
+*/
 void point_scrored(PongGame &pg, int game_mode, float & reward, float ball_x_position){
 
     if (ball_x_position < 0.f){
@@ -191,7 +204,9 @@ void point_scrored(PongGame &pg, int game_mode, float & reward, float ball_x_pos
     }
 }
 
-
+/**
+ * calculates a correct move based on a given game state.
+*/
 void perfect_player(PongGame & pg){
 
     int i = rand()%2 ? -1 : 1 ;

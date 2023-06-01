@@ -33,10 +33,11 @@ float min_exploration_rate = 0.01;
 float exploration_decay_rate = 0.01;
 float reward = 0;
 
-int game_state_start;
-int game_state_end;
-int action;
-int old_save_val = 0;
+int game_state_start{};
+int game_state_end{};
+int old_save_val{0};
+int game_mode{};
+int action{};
 
 std::size_t range = 262144;
 std::string filename = "./resources/weights.txt";
@@ -54,7 +55,7 @@ int main()
 {
 
     init_state_table(lookupTable, tableSize);
-    int game_mode = game_mode_selection();
+    game_mode = game_mode_selection();
     load_table(filename, Qtable);
     PongGame pg;
     srand(time(0)); // random values seed
@@ -85,7 +86,7 @@ int main()
         start_state.paddle1 = l_paddle_pos.y;
 
         //calculate starting game state
-        game_state_start = state_calc(lookupTable,  start_state, velY, range);//start_state.ball_x + (2*start_state.ball_y) + start_state.paddle1;
+        game_state_start = state_calc(lookupTable,  start_state, velY, range);
 
         int correct_move = correct_move_calculator(start_state, velY);
 

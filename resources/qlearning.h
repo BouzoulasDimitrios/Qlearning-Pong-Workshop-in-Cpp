@@ -1,6 +1,9 @@
 #include <string>
 #include <iostream>
 
+/**
+ * prints out the look-up table.
+*/
 void print_table(std::vector<std::vector<float>> &Qtable){
 
     for(int  i = 0 ; i < 10 ; i++){ 
@@ -11,6 +14,9 @@ void print_table(std::vector<std::vector<float>> &Qtable){
     }
 }
 
+/**
+ * saves look-up table to a given file
+*/
 void save_table(std::string filename, std::vector<std::vector<float>> &Qtable){
     
     std::ofstream file(filename);
@@ -23,6 +29,9 @@ void save_table(std::string filename, std::vector<std::vector<float>> &Qtable){
     file.close();
 }
 
+/**
+ * loads look-up table from file.
+*/
 void load_table(std::string filename, std::vector<std::vector<float>> &Qtable){
 
     std::ifstream file(filename);
@@ -56,17 +65,23 @@ int select_action(int game_state, std::vector<std::vector<float>> &Qtable, float
 
 }
 
+// used to store all of the games information for a particular state
 struct State {
   float paddle1, paddle2; // paddle positions
   float ball_x, ball_y;   // ball position
 };
 
-
+/**
+ * Update lookup table values.
+*/
 void update_qtable(std::vector<std::vector<float>> &Qtable, int game_state_end, int game_state_start, float learning_rate, float discount_rate, float reward, int action ){
     int next_move = static_cast<int> (*max_element(std::begin(Qtable[game_state_end]), std::end(Qtable[game_state_end])));
     Qtable[game_state_start][action] = Qtable[game_state_start][action] * (1 - learning_rate) + learning_rate * (reward + discount_rate * next_move);
 }
 
+/**
+ * move the paddle based on the action selected by the model.
+*/
 void take_action(PongGame & pg, int action, int QPADDLE_MOVE){
 
     if( action == 0 && l_paddle_pos.y - QPADDLE_MOVE > 0 )
@@ -77,6 +92,11 @@ void take_action(PongGame & pg, int action, int QPADDLE_MOVE){
         return;
 }
 
+/**
+ * Initialization of a state table
+ * The table is tableSize * tableSize
+ * currently => 512 * 512
+*/
 void init_state_table(std::vector<std::vector<int>> &lookupTable, int tableSize){
 
     int value = 0;
@@ -98,6 +118,9 @@ void init_state_table(std::vector<std::vector<int>> &lookupTable, int tableSize)
     return;
 }
 
+/**
+ * Calculates correct move which is compared to the one that the model took
+*/
 int correct_move_calculator(State state1, float vel){
 
     if(vel >= 0){
@@ -115,14 +138,17 @@ int correct_move_calculator(State state1, float vel){
     return 0; // avoid warning
 }
 
-
+/**
+ * Calculates the state of the game
+ * factors in the paddle and ball heights along side with the velocity in the Y axis.
+*/
 int state_calc(std::vector<std::vector<int>> & lookupTable, struct State & state, float velocity, std::size_t range){
 
     if(velocity > 0){
-        // cout<<"POSTITIVE"<<velocity<<endl; //state.ball_x, 
+        // cout<<"POSTITIVE"<<velocity<<endl; 
         return range + lookupTable[state.ball_y][state.paddle1];     
     }else{
-        // cout<<"NEGATIVE"<<velocity<<endl; //state.ball_x, 
+        // cout<<"NEGATIVE"<<velocity<<endl; 
         return range - lookupTable[state.ball_y][state.paddle1];     
     }
 
