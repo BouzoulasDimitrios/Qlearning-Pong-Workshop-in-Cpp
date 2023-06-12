@@ -106,7 +106,8 @@ int main()
         left_paddleBounds = pg.left_paddle.getGlobalBounds();
         right_paddleBounds = pg.right_paddle.getGlobalBounds();
         ballBounds = pg.ball.getGlobalBounds();
-
+        
+        // Handle Paddle-Ball collision
         if ( left_paddleBounds.intersects(ballBounds) ) {
             float t = ((pos.y - l_paddle_pos.y)/ PADDLE_HEIGHT) - 0.5f;
             velX = fabs(velX) + 0.1;
@@ -157,7 +158,7 @@ int main()
         //reset reward
         reward = 0;
 
-        // Delay used for debugging
+        // Time delay used for debugging
         // std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         system("clear");

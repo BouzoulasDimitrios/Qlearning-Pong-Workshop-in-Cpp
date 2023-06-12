@@ -9,15 +9,15 @@
 # Introduction
 
 This is an implementation of a qlearning algorithm for the classic game of pong.<br> 
-In this implementation standard c++ libraries are used in order to implement qlearning.<br> 
-No external machine learning libraries are used as the implementation does not involve a neural network.<br> 
+In this implementation, standard C++ libraries are used in order to implement qlearning.<br> 
+No external machine learning libraries are used, as the implementation does not involve a neural network.<br> 
 
 # Setup
 
 Prerequisites: [SFML](https://www.sfml-dev.org/index.php)
 
-    $ git clone https://github.com/BouzoulasDimitrios/Qlearning-Pong.git
-    $ cd Qlearning-Pong/
+    $ git clone https://github.com/BouzoulasDimitrios/Qlearning-Pong-Workshop-in-Cpp.git
+    $ cd Qlearning-Pong-Workshop-in-Cpp/
     $ bash launch.sh
 
 # Demo
@@ -43,9 +43,9 @@ For example the starting game state: <br>
 <img src="./images/starting_gamestate.png" alt="exaple game state." style="width:50%;"/>
 </p>
 
-In any given state of the PONG game we can describe what is happening by simply listing the game components coordintes on the game window.<br>
+In any given state of the PONG game, we can describe what is happening by simply listing the coordinates of the game components on the game window.<br>
 
-In the start of the game we can describe the game as following:
+At the start of the game, we can describe the game as follows:
 
     Right paddle: x = 1000 , y = 228 
     Left  paddle: x = 10   , y = 228 
@@ -57,11 +57,11 @@ As a result the whole game can be described at any state by six numbers.<br>
 
 ### How decisions are made
 
-In simple terms qlearning aims to create a table which will give us the correct move for every game state.
+In simple terms, qlearning aims to create a table that will give us the correct move for every game state.
 
-In pong we have 3 moves only for our model. UP, DOWN or STAY.
+In pong, we have only 3 moves for our model. UP, DOWN, or STAY.
 
-As a result we get a lookup table that looks like this:
+As a result, we get a lookup table that looks like this:
 
 
 |          |    UP   |  STAY   |  DOWN   |   
@@ -72,8 +72,8 @@ As a result we get a lookup table that looks like this:
 
 
 But how does the algorithm know which action it should take for any given game state?<br>
-This is where **training** takes place, the algorithm takes random actions and gets rewarded or punished based on the action it takes.<br>
-After training for a while the lookup table will end up having large numeric values for the correct moves and negative ones for the wrong moves.
+This is where **training** takes place, the algorithm takes random actions and gets rewarded or punished based on the actions it takes.<br>
+After training for a while, the lookup table will end up having large numeric values for the correct moves and negative ones for the wrong moves.
 
 
 |          |    UP   |  STAY   |  DOWN   |   
@@ -83,29 +83,29 @@ After training for a while the lookup table will end up having large numeric val
 |  state 2 |  0.981  | -0.878  | -0.825  |
 
 
-Now during the testing phase the only thing that our model has to do is to look at the highest number for a given game state and take that action. <br>
-If it was trained correctly it should be able to play the game.
+Now during the testing phase the only thing that our model has to do is look at the highest number for a given game state and take that action. <br>
+If it was trained correctly, it should be able to play the game.
 
 # Qlearning
 ## Goal
 
-The goal we have is a model that can play **pong**. <br>
-Due to the simplicity of the approach it can be difficult to make the model perform fancy moves<br>
+The goal we have is a model that can play **PONG**. <br>
+Due to the simplicity of the approach, it can be difficult to make the model perform fancy moves<br>
 and teach it to hit the ball with nice angles.
 
-As a result the problem is approached with a simpler goal.<br>
+As a result, the problem is approached with a simpler goal.<br>
 **"Make the model always hit the ball"**.<br>
 That will be the goal for the model, and the reason for that is simple.<br>
-In pong if you always hit the ball you cannot lose as a result you will win sooner or later.<br>
+In pong if you always hit the ball you cannot lose, and as a result you will win sooner or later.<br>
 <br>
 
 ## calculating game states
 
 This is one of the first problems that come up.<br>
-In order to calculate all the possible game states we run into a problem.<br>
+In order to calculate all the possible game states, we run into a problem.<br>
 There are simply too many of them.<br>
 
-In case we want to calculate all of the game states we have the following variables:<br>
+In case we want to calculate all of the game states, we have the following variables:<br>
 
 
     Right paddle: x, y
@@ -113,16 +113,16 @@ In case we want to calculate all of the game states we have the following variab
     Ball: x, y   
 
 
-Now some of these variables are useless as the paddles do not move in the **X** axis.<br>
+Now some of these variables are useless as the paddles do not move along the **X** axis.<br>
 
-As a result we are left with the following game variables:<br>
+As a result, we are left with the following game variables:<br>
 
     Right paddle: y
     Left  paddle: y
     Ball: x, y 
 
-**Y values** range from 0 to 512 <br>
-**X values** range from 0 to 1024 <br>
+**Y values** range from 0 to 512.  <br>
+**X values** range from 0 to 1024. <br>
 <br>
 
     Calculating the game states gives us the following number:
@@ -130,23 +130,23 @@ As a result we are left with the following game variables:<br>
     game_states = 512 * 512 * 512 * 1024 => 
     game_states = 137438953472 
 
-This leaves us with roughly 100 Billion game states which is an unpleasantly big number.<br>
+This leaves us with roughly 100 **billion** game states, which is an unpleasantly big number.<br>
 
-As a result we should try to get it smaller.<br>
+As a result, we should try to get it smaller.<br>
 Let's start by the least relevant part, the oponents paddle height.<br>
-If my goal is to hit the ball I do not have to know where the oponents paddle is.<br>
+If my goal is to hit the ball, I do not have to know where the opponent's paddle is.<br>
 
     So let's calculate the ammount of game states again leaving out the oponents paddle Y position:
 
     game_states = 512 * 512 * 1024 => 
     game_states = 268435456 
 
-Still being in the hundreds of millions is not that optimal as we need to have 3 values for every game state<br>
+Still, being in the hundreds of millions is not optimal as we need to have 3 values for every game state<br>
 leaving us with nearly 1 billion values.<br>
 
-So how to optimize from here? <br>
+So how do we optimize from here? <br>
 
-we could apply the following approach:<br>
+We could apply the following approach:<br>
 As we aim to always hit the ball and nothing else, the only thing that we need to do is to be on the same level as the ball.<br>
 
 We could simply use the **ball's Y** value and the **paddle's Y** value.
@@ -156,7 +156,7 @@ We could simply use the **ball's Y** value and the **paddle's Y** value.
     game_states = 512 * 512 => 
     game_states = 262144 
 
-This leaves us with a number which is in the hundreds of thousands instead of hundreds of billions which is a significan improvement.
+This leaves us with a number that is in the hundreds of thousands instead of hundreds of billions, which is a significant improvement.
 
 Now what the model will see is just two heights like this:
 
@@ -165,24 +165,24 @@ Now what the model will see is just two heights like this:
     <img src="./images/PaddleBallHeights.png" alt="Bar plot of paddle and ball." style="width:70%;"/>
 </p>
 
-The result is a model that will try to always match these heights, simmilar to the middle "`Same height`"<br> plot, if the actions of the model result in the paddle being bellow or above the ball, it gets punished.
+The result is a model that will try to always match these heights, similar to the middle "`Same height`"<br> plot, if the actions of the model result in the paddle being below or above the ball, it gets punished.
 
 Now that we have the values that will make up our states, we need to create some function in order to calculate the state.
 
-Since we have only 2 variables to play with. We could approach this as a **2D** martix where:<br>
+Since we have only 2 variables to play with. We could approach this as a **2D** matrix where:<br>
   
 X = Paddle's Y values<br>
 Y = Ball's Y values<br>
 
-And as a result we get a table that looks like this:
+And as a result, we get a table that looks like this:
 
 <p align = "center">
     <img src="./images/state_dataframe.png" alt="States dataframe representation." style="width:100%;"/>
 </p>
 
-From this we can always assign a unique number to any game state, any combinatino of **Y** values.
+From this, we can always assign a unique number to any game state, any combination of **Y** values.
 
-In order to initialize and populate the matrix the following can be used:
+In order to initialize and populate the matrix, the following can be used:
 
 ``` C++
 const int tableSize = 512;
@@ -213,15 +213,15 @@ void init_state_table(std::vector<std::vector<int>> &lookupTable, int tableSize)
 }
 ```
 
-Now there's only one problem left, in case the the ball is directly in the middle of the paddle, how can the model know where should it go **UP** or **DOWN** ?<br>
+Now there's only one problem left, in case the ball is directly in the middle of the paddle, how can the model know whether it should go **UP** or **DOWN** ?<br>
 
 <p align = "center">
     <img src="./images/Middle_state_stiched.jpg" alt="Example of the ball being in the middle of the paddle." style="width:50%;"/>
 </p>
 
 How should a decision be made in this state?<br>
-From what we see the ball could be going up or down and there's no way to tell.<br>
-But we can add a factor here that change's everything, we could factor in the balls *speed*.<br>
+From what we see, the ball could be going up or down, and there's no way to tell.<br>
+But we can add a factor here that changes everything, we could factor in the ball's *speed*.<br>
 
 <p align = "center">
     <img src="./images/ball_vectors.png" alt="Ball vector analysis" style="width:40%;"/>
@@ -241,8 +241,8 @@ The solution to this is the following:
         else
             select state for negative Y values
         
-as a result we end up doubling our ammount of game states. Going from 262144 to => 524288<br>
-which is still a managable amount of states.
+As a result, we end up doubling our number of game states. Going from 262144 to => 524288<br>
+which is still a manageable number of states.
 
 Now we are ready to create a look-up table:
 
@@ -252,7 +252,7 @@ const int NUMBER_OF_ACTIONS = 3;
 
 std::vector<std::vector<float>> Qtable = std::vector<std::vector<float>>(2*range, std::vector<float>(NUMBER_OF_ACTIONS, 0.0f));
 ```
-as a result we get the following table:
+As a result we get the following table:
        
        | 0 1 2
     ------------- 
@@ -272,7 +272,7 @@ as a result we get the following table:
     14 | 0 0 0 
 
 
-where the numbers on the Y axis represent the game state and the numbers on the X the actions.
+Where the numbers on the Y axis represent the game state and the numbers on the X the actions.
 
     0 = Down
     1 = Stay
@@ -283,13 +283,13 @@ where the numbers on the Y axis represent the game state and the numbers on the 
 Qlearning works using the flollowing steps:
 
     1) Exploration: the model performs random actions and adjusts the values on the lookup table based on the
-    rewards or punishments it recieves.
+    rewards or punishments it receives.
 
-    2) Exploitation: After the exploration stage we enter the exploitation stage, the model keeps on learning
-    the difference now is that it's movements use the information that it gained from the exploration stage
-    meaning that it does not perform rendom movements but selects the ones that it percieves to be correct.
+    2) Exploitation: After the exploration stage, we enter the exploitation stage, the model keeps on learning
+    the difference now is that its movements use the information that it gained from the exploration stage
+    meaning that it does not perform random movements but selects the ones that it perceives to be correct.
 
-    3) After spending time in the exploitation stage our model should be able to select the correct action for any given game state and perform it. In our case that means having the same Y value as the ball at all times.
+    3) After spending time in the exploitation stage, our model should be able to select the correct action for any given game state and perform it. In our case, that means having the same Y value as the ball at all times.
 
 
 Let's start with the exploration part as it comes first:
@@ -309,11 +309,11 @@ and it goes down until it reaches the minimum exploration rate that we've allowe
 
 ### Updating the look-up table
 
-- Every game loop an action is chosen
-- we read the reward/punishment and the next state of the game
-- the lookup table values are updated:
+- In every game loop an action is chosen
+- We read the reward/punishment and the next state of the game
+- The lookup table values are updated:
 
-The update happends using the following function:
+The update happens using the following function:
 
 <p align = "center">
     <img src="./images/lookup_table_upd_func.webp" alt="Update function" style="width:70%;"/>
@@ -336,7 +336,7 @@ void update_qtable(std::vector<std::vector<float>> &Qtable, int game_state_end, 
 
 Now to put all of these pieces together: 
 
-first we need to initialize the state table and the look-up table
+First we need to initialize the state table and the look-up table.
 
 ``` c++
 std::vector<std::vector<float>> Qtable = std::vector<std::vector<float>>(2*range, std::vector<float>(NUMBER_OF_ACTIONS, 0.0f));
@@ -405,11 +405,11 @@ int select_action(int game_state, std::vector<std::vector<float>> &Qtable, float
 
 }
 ```
-This function factors in the exploration rate, which means that for the first part of the training the model<br>
+This function factors in the exploration rate, which means that for the first part of the training, the model<br>
 will be behaving randomly and thus 'exploring' the environment, afterwards when the exploration rate is low it<br>
 will start selecting actions based on what it has learned and continue from there.
 
-Now we also need to calculate what would be a correct action:
+Now we also need to calculate what would be the correct action:
 
 ``` c++
 int correct_move_calculator(State state1, float vel){
@@ -430,32 +430,32 @@ int correct_move_calculator(State state1, float vel){
 }
 ```
 
-after we select our action and the game loop is over we compare it to the correct action,<br> 
+After we select our action and the game loop is over, we compare it to the correct action,<br> 
 
 ```c++
     reward = (action == correct_move) ? 1 : -1;
 ```
 
-Here if the action matches the correct one the model is rewarded else it's punished. <br>
+If the action matches the correct one the model is rewarded else it's punished. <br>
 
 
-After every game loop we also update the loopup table values based on our reward/punishment:
+After every game loop, we also update the loopup table values based on our reward/punishment:
 
 ```c++
 update_qtable(Qtable, game_state_end, game_state_start, learning_rate, discount_rate, reward, action);
 
 ```
 
-After a certain ammount of loops the model will be at a state where it can play the game on it's own.
+After a certain number of loops, the model will be at a state where it can play the game on its own.
 Performing the perfect move always and staying on level with the ball at all times.
 
-With the weights that I have currenly saved the model should be impossible to beat but feel free to try to do so.<br>
+With the weights that I have currently saved, the model should be impossible to beat, but feel free to try to do so.<br>
 
 ## conclusions
 
-A reinforcement learning model can be trained to play pong having only 3 values from the game, the paddle's height the ball's height and the speed of the ball on the Y axis.<br>
+A reinforcement learning model can be trained to play pong with only 3 values from the game, the paddle's height, the ball's height, and the speed of the ball on the Y axis.<br>
 
-All of the data for the game can be retrieved from the mdoel using the functions provided, feel free to explore different ways to train the model in the least ammount of time possible, and with the smallest ammount of game states possible.
+All of the data for the game can be retrieved from the model using the functions provided. Feel free to explore different ways to train the model in the least amount of time possible, and with the smallest amount of game states possible.
 
 
 

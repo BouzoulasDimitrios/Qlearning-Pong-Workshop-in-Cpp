@@ -18,14 +18,14 @@ int game_mode_selection(){
 
     std::string user_input;
     int mode = -1;
-    std::cout << "Enter game mode:\n1) Player vs Player \n2)Player vs AI \n3) AI vs Hardcoded player \n4) train the model"<<std::endl; // Type a number and press enter
+    std::cout << "Enter game mode:\n1) Player vs Player \n2) Player vs AI \n3) AI vs Hardcoded player \n"<<std::endl; // Type a number and press enter
     std::cin >>user_input;
     if(check_number(user_input))
         mode = stoi(user_input);
 
-    while(mode<1 || mode>4){
+    while(mode<1 || mode>3){
         std::cout << "Wrong entry. \n"; // Type a number and press enter
-        std::cout << "Enter game mode:\n1) Player vs Player \n2)Player vs AI \n3) AI vs Hardcoded player \n4) train the model"<<std::endl; // Type a number and press enter
+        std::cout << "Enter game mode:\n1) Player vs Player \n2)Player vs AI \n3) AI vs Hardcoded player \n"<<std::endl; // Type a number and press enter
         std::cin >>user_input;
         if(check_number(user_input))
             mode = stoi(user_input);
